@@ -314,3 +314,28 @@ body {
     gap: 8px;
   }
 }
+
+/* ── Due dates ───────────────────────────────────────────────────────────── */
+
+.due-date-input {
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.task-due {
+  font-size: 0.8rem;
+  color: var(--color-completed);
+  flex-shrink: 0;
+}
+
+.task-item.overdue .task-text,
+.task-item.overdue .task-due {
+  color: var(--color-danger);
+}
+
+.task-item.overdue .task-due {
+  font-weight: 600;
+}
