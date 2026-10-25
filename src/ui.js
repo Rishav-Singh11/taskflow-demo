@@ -9,6 +9,7 @@
   };
 
   var taskInput = document.getElementById('taskInput');
+  var dueDateInput = document.getElementById('dueDateInput');
   var addTaskForm = document.getElementById('addTaskForm');
   var taskList = document.getElementById('taskList');
   var taskCount = document.getElementById('taskCount');
@@ -16,13 +17,21 @@
   var clearCompletedBtn = document.getElementById('clearCompleted');
   var filterBtns = document.querySelectorAll('.filter-btn');
 
+  var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  // Formats YYYY-MM-DD as "Sep 20" without going through Date (avoids timezone shifts).
+  function formatDueDate(iso) {
+    var parts = iso.split('-');
+    return MONTHS[Number(parts[1]) - 1] + ' ' + Number(parts[2]);
+  }
+
   function render() {
     var visible = TM.filterTasks(state.tasks, state.filter);
 
     taskList.innerHTML = '';
     visible.forEach(function (task) {
       var li = document.createElement('li');
-      li.className = 'task-item' + (task.completed ? ' completed' : '');
+      li.className = 'task-item' + (task.completed ? ' completed' : '') + (TM.isOverdue(task) ? ' overdue' : '');
       li.dataset.id = task.id;
 
       var checkbox = document.createElement('input');
@@ -37,6 +46,13 @@
       var label = document.createElement('span');
       label.className = 'task-text';
       label.textContent = task.text;
+
+      var dueLabel = null;
+      if (task.dueDate) {
+        dueLabel = document.createElement('span');
+        dueLabel.className = 'task-due';
+        dueLabel.textContent = 'Due: ' + formatDueDate(task.dueDate);
+      }
 
       var priorityBadge = document.createElement('span');
       priorityBadge.className = 'priority-badge priority-' + task.priority;
@@ -53,6 +69,7 @@
 
       li.appendChild(checkbox);
       li.appendChild(label);
+      if (dueLabel) li.appendChild(dueLabel);
       li.appendChild(priorityBadge);
       li.appendChild(deleteBtn);
       taskList.appendChild(li);
@@ -75,8 +92,9 @@
     var priority = prioritySelect ? prioritySelect.value : 'medium';
 
     try {
-      state.tasks = TM.addTask(state.tasks, text, priority);
+      state.tasks = TM.addTask(state.tasks, text, priority, dueDateInput.value);
       // BUG: taskInput.value is not reset — text remains after adding
+      dueDateInput.value = '';
       render();
     } catch (e) {
       var errorEl = document.getElementById('errorMsg');
